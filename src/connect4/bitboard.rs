@@ -1,4 +1,7 @@
-use std::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, Shl, Shr};
+use std::{
+    fmt::Display,
+    ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, Shl, Shr},
+};
 
 /// The number of rows in a connect 4 grid
 pub const NUM_ROWS: usize = 6;
@@ -100,7 +103,13 @@ impl Bitboard {
     ///
     /// TODO: This can probably be replaced with is_column_filled
     pub fn is_top_cell_filled(&self, column_index: usize) -> bool {
-        (*self & (Self::TOP_ROW & Self::NTH_COLUMN[column_index])) == 0
+        (*self & (Self::TOP_ROW & Self::NTH_COLUMN[column_index])) != 0
+    }
+}
+
+impl Display for Bitboard {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:b}", self.0)
     }
 }
 
@@ -118,7 +127,7 @@ impl BitAndAssign for Bitboard {
 impl BitOr for Bitboard {
     type Output = Self;
     fn bitor(self, rhs: Self) -> Self::Output {
-        Self(self.0 & rhs.0)
+        Self(self.0 | rhs.0)
     }
 }
 impl BitOrAssign for Bitboard {
