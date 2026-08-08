@@ -11,4 +11,8 @@ impl Move {
         assert!(col_idx < bitboard::NUM_COLUMNS as u8);
         Self { column: col_idx }
     }
+
+    pub fn column(&self) -> u8 {
+        self.column
+    }
 }

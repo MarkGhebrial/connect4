@@ -1,4 +1,3 @@
-
 #[test]
 fn is_valid_test() {
     use crate::connect4::board::Board;

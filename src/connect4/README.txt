@@ -1,1 +1,0 @@
-This directory contains all the code related to representing the state of the connect 4 game.
