@@ -2,6 +2,7 @@ use crate::connect4::bitboard;
 
 /// A game move. Connect four moves are fully defined by which column you put the checker in, so
 /// this struct has exactly one field, indicating which column was played.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Move {
     column: u8,
 }

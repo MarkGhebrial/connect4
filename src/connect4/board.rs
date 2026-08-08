@@ -39,7 +39,7 @@ impl Board {
             .map(|col_idx| Move::new(col_idx as u8))
     }
 
-    pub fn apply_move(&mut self, r#move: Move) {
+    pub fn apply_move(mut self, r#move: Move) -> Self {
         let col_idx: usize = r#move.column() as usize;
         assert!(
             !self.combined_bitboard().is_top_cell_filled(col_idx),
@@ -58,6 +58,7 @@ impl Board {
             PlayerColor::Red => self.red |= mask,
         }
         self.up_next = self.up_next.next();
+        self
     }
 
     /// Validate that the numbers of red and yellow checkers are legal
