@@ -1,7 +1,9 @@
-use std::debug_assert;
+use std::{debug_assert, fmt::Display};
+
+use crossterm::style::Stylize;
 
 use crate::connect4::{
-    bitboard::{Bitboard, NUM_COLUMNS},
+    bitboard::{Bitboard, NUM_COLUMNS, NUM_ROWS},
     r#move::Move,
     player_color::PlayerColor,
 };
@@ -22,11 +24,29 @@ pub struct Board {
 
 // Public methods
 impl Board {
+    pub fn new() -> Self {
+        Self {
+            yellow: Bitboard::EMPTY,
+            red: Bitboard::EMPTY,
+            up_next: PlayerColor::Yellow,
+        }
+    }
+
+    /// Who's turn is it?
+    pub fn up_next(&self) -> PlayerColor {
+        self.up_next
+    }
+
     /// Check if the board is possible to achieve in gameplay.
     pub fn is_valid(&self) -> bool {
-        let no_overlap = (self.yellow | self.red) == 0;
+        let no_overlap = (self.yellow & self.red) == 0;
 
-        no_overlap && self.validate_checker_count() && !(self.yellow & self.red).is_hanging()
+        no_overlap && self.validate_checker_count() && !self.combined_bitboard().is_hanging()
+    }
+
+    pub fn has_four_in_a_row(&self) -> bool {
+        return false;
+        todo!()
     }
 
     /// Iterate over all the legal moves from this board state
@@ -39,7 +59,7 @@ impl Board {
             .map(|col_idx| Move::new(col_idx as u8))
     }
 
-    pub fn apply_move(mut self, r#move: Move) -> Self {
+    pub fn apply_move(&mut self, r#move: Move) {
         let col_idx: usize = r#move.column() as usize;
         assert!(
             !self.combined_bitboard().is_top_cell_filled(col_idx),
@@ -58,7 +78,46 @@ impl Board {
             PlayerColor::Red => self.red |= mask,
         }
         self.up_next = self.up_next.next();
+    }
+
+    pub fn with_move(mut self, r#move: Move) -> Self {
+        self.apply_move(r#move);
         self
+    }
+
+    pub fn pretty_print(
+        &self,
+        mut writer: impl std::fmt::Write,
+        with_numbers: bool,
+    ) -> std::fmt::Result {
+        for i in (0..(NUM_ROWS * NUM_COLUMNS)).rev() {
+            let col_idx = i % NUM_COLUMNS;
+
+            if col_idx == NUM_COLUMNS - 1 {
+                write!(writer, "┃ ")?;
+            }
+
+            let cell_mask = Bitboard::new(1 << i);
+
+            let is_yellow = (self.yellow & cell_mask) != 0;
+            let is_red = (self.red & cell_mask) != 0;
+            match (is_yellow, is_red) {
+                (true, true) => panic!("Tried to pretty print board with overlapping checkers"),
+                (true, false) => write!(writer, "{} ", "x".yellow())?,
+                (false, true) => write!(writer, "{} ", "o".red())?,
+                (false, false) => write!(writer, "  ")?,
+            }
+
+            if col_idx == 0 {
+                writeln!(writer, "┃")?;
+            }
+        }
+        if with_numbers {
+            // TODO: Use this labeling instead: println!("┗━1━2━3━4━5━6━7━┛")
+            writeln!(writer, "┗━6━5━4━3━2━1━0━┛")
+        } else {
+            writeln!(writer, "┗━━━━━━━━━━━━━━━┛")
+        }
     }
 
     /// Validate that the numbers of red and yellow checkers are legal
@@ -74,5 +133,11 @@ impl Board {
     /// The union of the yellow and red bitboards
     fn combined_bitboard(&self) -> Bitboard {
         self.yellow | self.red
+    }
+}
+
+impl Display for Board {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.pretty_print(f, true)
     }
 }

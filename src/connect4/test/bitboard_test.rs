@@ -38,3 +38,23 @@ fn is_hanging_test() {
     ]);
     assert!(bb.is_hanging());
 }
+
+#[test]
+fn is_top_cell_filled_test() {
+    use crate::connect4::bitboard::Bitboard;
+    use crate::connect4::bitboard::NUM_COLUMNS;
+
+    for i in 0..NUM_COLUMNS {
+        println!("Checking column {i}");
+        assert!(
+            !Bitboard::EMPTY.is_top_cell_filled(i),
+            "Empty board should have no filled top cells."
+        );
+        assert!(
+            Bitboard::FULL.is_top_cell_filled(i),
+            "Full board should have no empty top cells."
+        );
+    }
+
+    // TODO: Add some more test cases
+}

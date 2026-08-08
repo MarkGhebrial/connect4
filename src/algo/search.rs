@@ -7,7 +7,7 @@ use crate::{
 pub fn search_moves(board: &Board, depth: usize) -> (Move, i32) {
     let mut best: Option<(Move, i32)> = None;
     for move_ in board.iter_moves() {
-        let score = -negamax(&board.clone().apply_move(move_), depth - 1);
+        let score = -negamax(&board.clone().with_move(move_), depth - 1);
 
         // Find the move with the best score
         if best.is_none() || score > best.unwrap().1 {
@@ -29,7 +29,7 @@ fn negamax(board: &Board, remaining_depth: usize) -> i32 {
 
     let mut max_score = i32::MIN;
     for r#move in board.iter_moves() {
-        let board: Board = board.clone().apply_move(r#move);
+        let board: Board = board.clone().with_move(r#move);
         // This recursive call tells us how good this new board position is for the opponent. We
         // negate it because a bad score for them is a good score for us.
         let score = -negamax(&board, remaining_depth - 1);

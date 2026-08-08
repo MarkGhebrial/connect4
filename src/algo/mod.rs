@@ -2,3 +2,5 @@
 
 mod evaluate;
 mod search;
+
+pub use search::search_moves;

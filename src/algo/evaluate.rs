@@ -10,5 +10,6 @@ pub fn evaluate(board: &Board) -> i32 {
 
     //
 
+    return 0;
     todo!()
 }
