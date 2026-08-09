@@ -40,6 +40,97 @@ fn is_hanging_test() {
 }
 
 #[test]
+fn has_four_in_a_row_test() {
+    use crate::connect4::bitboard::Bitboard;
+
+    assert!(!Bitboard::EMPTY.has_four_in_a_row());
+    assert!(Bitboard::FULL.has_four_in_a_row());
+    assert!(Bitboard::TOP_ROW.has_four_in_a_row());
+    assert!(Bitboard::BOTTOM_ROW.has_four_in_a_row());
+    assert!(Bitboard::RIGHTMOST_COLUMN.has_four_in_a_row());
+
+    let bb = Bitboard::from_array([
+        [0, 1, 0, 0, 0, 0, 0],
+        [0, 1, 0, 0, 0, 0, 0],
+        [0, 1, 1, 1, 0, 0, 0],
+        [0, 1, 1, 1, 0, 0, 0],
+        [0, 1, 1, 1, 1, 0, 0],
+        [0, 0, 1, 1, 1, 0, 0],
+    ]);
+    assert!(bb.has_four_in_a_row());
+
+    let bb = Bitboard::from_array([
+        [0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0],
+        [1, 1, 1, 1, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0],
+    ]);
+    assert!(bb.has_four_in_a_row());
+
+    let bb = Bitboard::from_array([
+        [0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 1, 0, 1, 1, 1],
+        [0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0],
+    ]);
+    assert!(!bb.has_four_in_a_row());
+
+    let bb = Bitboard::from_array([
+        [1, 0, 1, 0, 1, 0, 1],
+        [1, 0, 1, 0, 1, 0, 1],
+        [0, 1, 0, 1, 0, 1, 0],
+        [0, 1, 0, 1, 0, 1, 0],
+        [1, 0, 1, 0, 1, 0, 1],
+        [1, 0, 1, 0, 1, 0, 1],
+    ]);
+    assert!(!bb.has_four_in_a_row());
+
+    let bb = Bitboard::from_array([
+        [0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 1],
+        [0, 0, 0, 0, 0, 0, 1],
+        [0, 0, 0, 0, 0, 0, 1],
+        [0, 0, 0, 0, 0, 0, 1],
+        [0, 0, 0, 0, 0, 0, 0],
+    ]);
+    assert!(bb.has_four_in_a_row());
+
+    let bb = Bitboard::from_array([
+        [1, 1, 1, 0, 0, 0, 0],
+        [1, 1, 0, 0, 0, 0, 1],
+        [1, 0, 1, 0, 0, 1, 0],
+        [0, 1, 0, 0, 1, 0, 1],
+        [1, 0, 0, 0, 0, 1, 1],
+        [0, 0, 0, 0, 1, 1, 1],
+    ]);
+    assert!(!bb.has_four_in_a_row());
+
+    let bb = Bitboard::from_array([
+        [0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 1],
+        [0, 0, 0, 0, 0, 1, 0],
+        [0, 0, 0, 0, 1, 0, 0],
+        [0, 0, 0, 1, 0, 0, 0],
+    ]);
+    assert!(bb.has_four_in_a_row());
+
+    let bb = Bitboard::from_array([
+        [0, 1, 0, 0, 0, 0, 0],
+        [0, 0, 1, 0, 0, 0, 0],
+        [0, 0, 0, 1, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0],
+    ]);
+    assert!(bb.has_four_in_a_row());
+}
+
+#[test]
 fn is_top_cell_filled_test() {
     use crate::connect4::bitboard::Bitboard;
     use crate::connect4::bitboard::NUM_COLUMNS;

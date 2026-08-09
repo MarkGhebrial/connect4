@@ -67,6 +67,94 @@ impl Bitboard {
         columns
     };
 
+    /// Masks for the diagonals of the board that slope "up".
+    pub const UP_DIAGONALS: [Bitboard; NUM_ROWS * 2] = {
+        let mut base_diagonals: [Bitboard; NUM_ROWS] = [Self::FULL; NUM_ROWS];
+        let base_diagonal = Self(0b0000010_0000100_0001000_0010000_0100000_1000001);
+        
+        let mut row = 0;
+        while row < NUM_ROWS {
+            base_diagonals[row] = Self(base_diagonal.0 << row);
+            row += 1;
+        }
+
+        // Each one of the base diagonals "wraps" back around from the left to right side of the
+        // board. We don't any wrapping, so we split the base diagonals at that split point.
+        let mut split_diagonals: [Bitboard; NUM_ROWS * 2] = [Self::FULL; NUM_ROWS * 2];
+        let mut row = 0;
+        while row < NUM_ROWS {
+            // Create the masks required to "split" the byteboard into the two diagonals
+            let base_mask = 0b0111111;
+            let mut a_mask: u64 = 0;
+            let mut b_mask: u64 = 0;
+            let mut i = 0;
+            while i < NUM_COLUMNS {
+                if i <= row {
+                    a_mask |= base_mask << (i * NUM_ROWS);
+                } else {
+                    b_mask |= base_mask << (i * NUM_ROWS);
+                }
+                i += 1;
+            }
+
+            split_diagonals[row] = Self(base_diagonals[row].0 & a_mask);
+            split_diagonals[row + NUM_ROWS] = Self(base_diagonals[row].0 & b_mask);
+
+            row += 1;
+        }
+        
+        split_diagonals
+    };
+
+    /// The set of all possible fours in a row.
+    pub const FOURS: [Bitboard; 69] = {
+        let mut fours = [Self::FULL; 69];
+        let mut fours_index = 0;
+
+        
+        // Horizontal fours
+        let mut row = 0;
+        while row < NUM_ROWS {
+            let mut i = 0;
+            while i <= NUM_COLUMNS - 4 {
+                fours[fours_index] = Self(Self::NTH_ROW[row].0 & (0b1111 << i << (row * NUM_COLUMNS)));
+                fours_index += 1;
+                i += 1;
+            }
+            row += 1;
+        }
+
+        // Vertical fours
+        let mut column = 0;
+        while column < NUM_COLUMNS {
+            let mut i = 0;
+            while i <= NUM_ROWS - 4 {
+                fours[fours_index] = Self(Self::NTH_COLUMN[column].0 & (0b0000001_0000001_0000001_0000001 << column << (i * NUM_COLUMNS)));
+                fours_index += 1;
+                i += 1;
+            }
+            column += 1;
+        }
+
+        // Diagonal fours
+        let base_up_four = Self::UP_DIAGONALS[3];
+        // let base_down_four = Self::FULL; // TODO
+        let base_down_four = Self(0b0000000_0000000_0001000_0000100_0000010_0000001);
+        let mut col_shift = 0;
+        while col_shift <= NUM_COLUMNS - 4 {
+            let mut row_shift = 0;
+            while row_shift <= NUM_ROWS - 4 {
+                fours[fours_index] = Self(base_up_four.0 << col_shift << (NUM_COLUMNS * row_shift));
+                fours[fours_index + 1] = Self(base_down_four.0 << col_shift << (NUM_COLUMNS * row_shift));
+                fours_index += 2;
+                row_shift += 1;
+            }
+            col_shift += 1;
+        }
+
+        fours
+    };
+
     /// Create a new Bitboard. Clears the topmost (unused) bits
     pub const fn new(n: u64) -> Self {
         Self(n & Self::FULL.0)
@@ -75,6 +163,7 @@ impl Bitboard {
     /// Create a bitboard from an array of bytes. Each byte represents one cell.
     ///
     /// TODO: Consider making this function `const`, or making it a macro.
+    #[allow(unused)] // This is currently only used in tests.
     pub fn from_array(array: [[u8; NUM_COLUMNS]; NUM_ROWS]) -> Bitboard {
         let mut bb: u64 = 0;
         for (i, byte) in array.iter().flatten().rev().enumerate() {
@@ -94,8 +183,16 @@ impl Bitboard {
         is_hanging
     }
 
+    pub fn has_four_in_a_row(&self) -> bool {
+        let mut has_four_in_a_row = false;
+        for mask in Self::FOURS {
+            has_four_in_a_row |= *self & mask == mask;
+        }
+        has_four_in_a_row
+    }
+
     /// Count the number of set bits.
-    pub fn count_ones(&self) -> u32 {
+    pub const fn count_ones(&self) -> u32 {
         self.0.count_ones()
     }
 
@@ -104,6 +201,30 @@ impl Bitboard {
     /// TODO: This can probably be replaced with is_column_filled
     pub fn is_top_cell_filled(&self, column_index: usize) -> bool {
         (*self & (Self::TOP_ROW & Self::NTH_COLUMN[column_index])) != 0
+    }
+
+    #[allow(unused)]
+    pub fn pretty_print(&self) {
+        for i in (0..(NUM_ROWS * NUM_COLUMNS)).rev() {
+            let col_idx = i % NUM_COLUMNS;
+
+            if col_idx == NUM_COLUMNS - 1 {
+                print!("┃ ");
+            }
+
+            let cell_mask = Bitboard::new(1 << i);
+
+            if *self & cell_mask != 0 {
+                print!( "x ");
+            } else {
+                print!( ". ");
+            }
+
+            if col_idx == 0 {
+                println!("┃");
+            }
+        }
+        println!("┗━6━5━4━3━2━1━0━┛");
     }
 }
 

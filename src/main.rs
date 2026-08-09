@@ -1,14 +1,13 @@
 mod algo;
 mod connect4;
 
-use std::io::{Read, Write, stdin, stdout};
+use std::io::{stdin, stdout};
 
 use clap::Parser;
 use crossterm::{cursor, execute, style::Print, terminal};
 
 use crate::{
-    algo::search_moves,
-    connect4::{bitboard::NUM_ROWS, board::Board, r#move::Move, player_color::PlayerColor},
+    algo::search_moves, connect4::{bitboard::NUM_ROWS, board::Board, r#move::Move, player_color::PlayerColor},
 };
 
 /// Program for playing connect 4
@@ -60,7 +59,7 @@ fn run_interactive(args: &InteractiveArgs) {
     )
     .unwrap();
 
-    while !board.has_four_in_a_row() {
+    while board.has_four_in_a_row().is_none() {
         // Display the board
         execute!(stdout(), cursor::RestorePosition, Print(board)).unwrap();
 
@@ -116,7 +115,19 @@ fn run_interactive(args: &InteractiveArgs) {
         }
     }
 
-    todo!()
+    // Display the board
+    execute!(stdout(), cursor::RestorePosition, Print(board)).unwrap();
+
+    let message = match board.has_four_in_a_row().unwrap() {
+        PlayerColor::Yellow => "Yellow won!",
+        PlayerColor::Red => "Red won!",
+    };
+    execute!(
+        stdout(),
+        terminal::Clear(terminal::ClearType::CurrentLine),
+        Print(message),
+        Print("\n"),
+    ).unwrap();
 }
 
 fn run_c4i() {

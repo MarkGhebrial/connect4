@@ -44,9 +44,15 @@ impl Board {
         no_overlap && self.validate_checker_count() && !self.combined_bitboard().is_hanging()
     }
 
-    pub fn has_four_in_a_row(&self) -> bool {
-        return false;
-        todo!()
+    pub fn has_four_in_a_row(&self) -> Option<PlayerColor> {
+        let yellow_four = self.yellow.has_four_in_a_row();
+        let red_four = self.red.has_four_in_a_row();
+        match (yellow_four, red_four) {
+            (true, true) => panic!("Both players have for in a row."),
+            (true, false) => Some(PlayerColor::Yellow),
+            (false, true) => Some(PlayerColor::Red),
+            (false, false) => None,
+        }
     }
 
     /// Iterate over all the legal moves from this board state
@@ -105,7 +111,7 @@ impl Board {
                 (true, true) => panic!("Tried to pretty print board with overlapping checkers"),
                 (true, false) => write!(writer, "{} ", "x".yellow())?,
                 (false, true) => write!(writer, "{} ", "o".red())?,
-                (false, false) => write!(writer, "  ")?,
+                (false, false) => write!(writer, ". ")?,
             }
 
             if col_idx == 0 {
