@@ -71,7 +71,7 @@ impl Bitboard {
     pub const UP_DIAGONALS: [Bitboard; NUM_ROWS * 2] = {
         let mut base_diagonals: [Bitboard; NUM_ROWS] = [Self::FULL; NUM_ROWS];
         let base_diagonal = Self(0b0000010_0000100_0001000_0010000_0100000_1000001);
-        
+
         let mut row = 0;
         while row < NUM_ROWS {
             base_diagonals[row] = Self(base_diagonal.0 << row);
@@ -102,7 +102,7 @@ impl Bitboard {
 
             row += 1;
         }
-        
+
         split_diagonals
     };
 
@@ -111,13 +111,13 @@ impl Bitboard {
         let mut fours = [Self::FULL; 69];
         let mut fours_index = 0;
 
-        
         // Horizontal fours
         let mut row = 0;
         while row < NUM_ROWS {
             let mut i = 0;
             while i <= NUM_COLUMNS - 4 {
-                fours[fours_index] = Self(Self::NTH_ROW[row].0 & (0b1111 << i << (row * NUM_COLUMNS)));
+                fours[fours_index] =
+                    Self(Self::NTH_ROW[row].0 & (0b1111 << i << (row * NUM_COLUMNS)));
                 fours_index += 1;
                 i += 1;
             }
@@ -129,7 +129,10 @@ impl Bitboard {
         while column < NUM_COLUMNS {
             let mut i = 0;
             while i <= NUM_ROWS - 4 {
-                fours[fours_index] = Self(Self::NTH_COLUMN[column].0 & (0b0000001_0000001_0000001_0000001 << column << (i * NUM_COLUMNS)));
+                fours[fours_index] = Self(
+                    Self::NTH_COLUMN[column].0
+                        & (0b0000001_0000001_0000001_0000001 << column << (i * NUM_COLUMNS)),
+                );
                 fours_index += 1;
                 i += 1;
             }
@@ -145,7 +148,8 @@ impl Bitboard {
             let mut row_shift = 0;
             while row_shift <= NUM_ROWS - 4 {
                 fours[fours_index] = Self(base_up_four.0 << col_shift << (NUM_COLUMNS * row_shift));
-                fours[fours_index + 1] = Self(base_down_four.0 << col_shift << (NUM_COLUMNS * row_shift));
+                fours[fours_index + 1] =
+                    Self(base_down_four.0 << col_shift << (NUM_COLUMNS * row_shift));
                 fours_index += 2;
                 row_shift += 1;
             }
@@ -215,9 +219,9 @@ impl Bitboard {
             let cell_mask = Bitboard::new(1 << i);
 
             if *self & cell_mask != 0 {
-                print!( "x ");
+                print!("x ");
             } else {
-                print!( ". ");
+                print!(". ");
             }
 
             if col_idx == 0 {

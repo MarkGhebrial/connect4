@@ -7,7 +7,8 @@ use clap::Parser;
 use crossterm::{cursor, execute, style::Print, terminal};
 
 use crate::{
-    algo::search_moves, connect4::{bitboard::NUM_ROWS, board::Board, r#move::Move, player_color::PlayerColor},
+    algo::search_moves,
+    connect4::{bitboard::NUM_ROWS, board::Board, r#move::Move, player_color::PlayerColor},
 };
 
 /// Program for playing connect 4
@@ -127,9 +128,63 @@ fn run_interactive(args: &InteractiveArgs) {
         terminal::Clear(terminal::ClearType::CurrentLine),
         Print(message),
         Print("\n"),
-    ).unwrap();
+    )
+    .unwrap();
 }
 
+/// c4i stands for "connect 4 interface". It's a protocol I invented that's vaguely inspired by the
+/// universal chess interface. A typical exchange goes like this (client goes first):
+/// ```text
+/// c4i
+/// c4iok
+/// play ;;;;;;
+/// playok 3
+/// play ;;;ry;;;
+/// playok 4
+/// ```
+/// Those chunks of text are boards serialized using my "connect 4 encoding" (c4e) format. See
+/// [Board::from_c4e] for more detail.
 fn run_c4i() {
-    todo!()
+    let mut line = String::new();
+    loop {
+        line.clear();
+        stdin().read_line(&mut line).unwrap();
+
+        let mut words = line.split_whitespace();
+        match words.next() {
+            Some("c4i") => println!("c4iok"),
+            Some("play") => {
+                // connect 4 encoding board encoding
+                let Some(c4e) = words.next() else {
+                    println!("err missing argument");
+                    continue;
+                };
+
+                let board = match Board::from_c4e(c4e) {
+                    Ok(board) => board,
+                    Err(e) => {
+                        println!("err {}", e);
+                        continue;
+                    }
+                };
+
+                println!("playok");
+                let (move_, _eval) = search_moves(&board, 1);
+                println!("playdone {}", move_.column());
+            }
+            Some(_) => println!("err unrecognized command"),
+            None => (),
+        }
+
+        // c4i
+        // c4iok
+        // play ;;;;;; timelimit 100
+        // playok
+        // playdone 3
+
+        // Read a line from stdin
+
+        // Interpret the command
+        // play
+    }
 }

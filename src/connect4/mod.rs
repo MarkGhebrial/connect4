@@ -2,6 +2,7 @@
 
 pub mod bitboard;
 pub mod board;
+pub mod err;
 pub mod r#move;
 pub mod player_color;
 

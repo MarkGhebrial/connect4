@@ -4,6 +4,7 @@ use crossterm::style::Stylize;
 
 use crate::connect4::{
     bitboard::{Bitboard, NUM_COLUMNS, NUM_ROWS},
+    err::C4eParseError,
     r#move::Move,
     player_color::PlayerColor,
 };
@@ -30,6 +31,48 @@ impl Board {
             red: Bitboard::EMPTY,
             up_next: PlayerColor::Yellow,
         }
+    }
+
+    /// Parse a c4e string into a board.
+    pub fn from_c4e(c4e: &str) -> Result<Self, C4eParseError> {
+        let columns: Vec<&str> = c4e.split(';').collect();
+
+        if columns.len() != NUM_COLUMNS {
+            return Err(C4eParseError::WrongNumberOfColumns);
+        }
+
+        let mut board = Self::new();
+        for (column_index, column) in columns.iter().rev().enumerate() {
+            if column.len() > NUM_ROWS {
+                return Err(C4eParseError::OverfilledColumn);
+            }
+
+            for byte in column.bytes() {
+                board.drop_into_column(
+                    column_index,
+                    match byte {
+                        b'y' => PlayerColor::Yellow,
+                        b'r' => PlayerColor::Red,
+                        _ => return Err(C4eParseError::IllegalCharacter),
+                    },
+                );
+            }
+        }
+        let checker_difference = board
+            .yellow
+            .count_ones()
+            .wrapping_sub(board.red.count_ones());
+        board.up_next = if checker_difference % 2 == 0 {
+            PlayerColor::Yellow
+        } else {
+            PlayerColor::Red
+        };
+
+        if !board.is_valid() {
+            return Err(C4eParseError::InvalidBoard);
+        }
+
+        Ok(board)
     }
 
     /// Who's turn is it?
@@ -66,29 +109,33 @@ impl Board {
     }
 
     pub fn apply_move(&mut self, r#move: Move) {
-        let col_idx: usize = r#move.column() as usize;
-        assert!(
-            !self.combined_bitboard().is_top_cell_filled(col_idx),
-            "Tried to move in an already filled column"
-        );
         debug_assert!(self.is_valid(), "Tried to apply a move to an invalid board");
-
-        // The number of checkers stacked in the column
-        let col_stack_height: usize = (self.combined_bitboard()
-            & Bitboard::NTH_COLUMN[r#move.column() as usize])
-            .count_ones() as usize;
-
-        let mask = Bitboard::NTH_ROW[col_stack_height] & Bitboard::NTH_COLUMN[col_idx];
-        match self.up_next {
-            PlayerColor::Yellow => self.yellow |= mask,
-            PlayerColor::Red => self.red |= mask,
-        }
+        self.drop_into_column(r#move.column() as usize, self.up_next);
         self.up_next = self.up_next.next();
     }
 
     pub fn with_move(mut self, r#move: Move) -> Self {
         self.apply_move(r#move);
         self
+    }
+
+    /// Drop a checker into the specified column of the board. Note that this function offers no
+    /// protection against creating an invalid board state, and it doesn't advance `self.up_next()`
+    fn drop_into_column(&mut self, col_idx: usize, color: PlayerColor) {
+        assert!(
+            !self.combined_bitboard().is_top_cell_filled(col_idx),
+            "Tried to move in an already filled column"
+        );
+
+        // The number of checkers stacked in the column
+        let col_stack_height: usize =
+            (self.combined_bitboard() & Bitboard::NTH_COLUMN[col_idx]).count_ones() as usize;
+
+        let mask = Bitboard::NTH_ROW[col_stack_height] & Bitboard::NTH_COLUMN[col_idx];
+        match color {
+            PlayerColor::Yellow => self.yellow |= mask,
+            PlayerColor::Red => self.red |= mask,
+        }
     }
 
     pub fn pretty_print(
@@ -128,7 +175,7 @@ impl Board {
 
     /// Validate that the numbers of red and yellow checkers are legal
     fn validate_checker_count(&self) -> bool {
-        let checker_difference = self.yellow.count_ones() - self.red.count_ones();
+        let checker_difference = self.yellow.count_ones().wrapping_sub(self.red.count_ones());
         match checker_difference {
             0 => self.up_next == PlayerColor::Yellow,
             1 => self.up_next == PlayerColor::Red,
