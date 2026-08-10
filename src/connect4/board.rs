@@ -75,6 +75,14 @@ impl Board {
         Ok(board)
     }
 
+    pub fn yellow(&self) -> Bitboard {
+        self.yellow
+    }
+
+    pub fn red(&self) -> Bitboard {
+        self.yellow
+    }
+
     /// Who's turn is it?
     pub fn up_next(&self) -> PlayerColor {
         self.up_next
@@ -91,7 +99,7 @@ impl Board {
         let yellow_four = self.yellow.has_four_in_a_row();
         let red_four = self.red.has_four_in_a_row();
         match (yellow_four, red_four) {
-            (true, true) => panic!("Both players have for in a row."),
+            (true, true) => panic!("Both players have four in a row."),
             (true, false) => Some(PlayerColor::Yellow),
             (false, true) => Some(PlayerColor::Red),
             (false, false) => None,

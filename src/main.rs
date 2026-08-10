@@ -111,7 +111,7 @@ fn run_interactive(args: &InteractiveArgs) {
                 Print("Computing next move...")
             )
             .unwrap();
-            let (move_, _evaluation) = search_moves(&board, 1);
+            let (move_, _evaluation) = search_moves(&board, 4);
             board.apply_move(move_);
         }
     }

@@ -23,7 +23,7 @@ pub fn search_moves(board: &Board, depth: usize) -> (Move, i32) {
 ///
 /// https://chessprogramming.org/Negamax
 fn negamax(board: &Board, remaining_depth: usize) -> i32 {
-    if remaining_depth == 0 {
+    if remaining_depth == 0 || board.has_four_in_a_row().is_some() {
         return evaluate(board);
     }
 
