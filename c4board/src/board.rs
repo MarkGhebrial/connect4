@@ -2,7 +2,7 @@ use std::{debug_assert, fmt::Display};
 
 use crossterm::style::Stylize;
 
-use crate::connect4::{
+use crate::{
     bitboard::{Bitboard, NUM_COLUMNS, NUM_ROWS},
     err::C4eParseError,
     r#move::Move,

@@ -1,4 +1,4 @@
-use crate::connect4::bitboard;
+use crate::bitboard;
 
 /// A game move. Connect four moves are fully defined by which column you put the checker in, so
 /// this struct has exactly one field, indicating which column was played.

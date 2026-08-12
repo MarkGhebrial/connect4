@@ -1,15 +1,10 @@
-mod algo;
-mod connect4;
-
 use std::io::{stdin, stdout};
 
 use clap::Parser;
 use crossterm::{cursor, execute, style::Print, terminal};
 
-use crate::{
-    algo::search_moves,
-    connect4::{bitboard::NUM_ROWS, board::Board, r#move::Move, player_color::PlayerColor},
-};
+use c4board::{bitboard::NUM_ROWS, board::Board, r#move::Move, player_color::PlayerColor};
+use c4engine::search_moves;
 
 /// Program for playing connect 4
 #[derive(clap::Parser, Debug)]
@@ -27,10 +22,24 @@ enum Commands {
     C4I,
 }
 
+#[derive(clap::ValueEnum, Debug, Clone, Copy)]
+enum PlayAs {
+    Yellow,
+    Red,
+}
+impl PlayAs {
+    pub fn to_player_color(&self) -> PlayerColor {
+        match self {
+            PlayAs::Yellow => PlayerColor::Yellow,
+            PlayAs::Red => PlayerColor::Red,
+        }
+    }
+}
+
 #[derive(clap::Parser, Debug)]
 struct InteractiveArgs {
     #[arg(short, long, default_value = "yellow")]
-    play_as: PlayerColor,
+    play_as: PlayAs,
 }
 
 impl Commands {
@@ -65,7 +74,7 @@ fn run_interactive(args: &InteractiveArgs) {
         execute!(stdout(), cursor::RestorePosition, Print(board)).unwrap();
 
         // Human's turn
-        if board.up_next() == args.play_as {
+        if board.up_next() == args.play_as.to_player_color() {
             let legal_moves: Vec<u8> = board.iter_moves().map(|m| m.column()).collect();
 
             execute!(

@@ -1,9 +1,8 @@
-use crate::{
-    algo::evaluate::evaluate,
-    connect4::{board::Board, r#move::Move},
-};
+use crate::evaluate::evaluate;
 
-/// Search for the best move from this board position
+use c4board::{board::Board, r#move::Move};
+
+/// Search for the best move from this board position.
 pub fn search_moves(board: &Board, depth: usize) -> (Move, i32) {
     let mut best: Option<(Move, i32)> = None;
     for move_ in board.iter_moves() {

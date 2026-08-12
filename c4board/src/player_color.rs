@@ -1,5 +1,5 @@
 /// Self explanatory :)
-#[derive(Debug, Clone, Copy, PartialEq, Eq, clap::ValueEnum)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum PlayerColor {
     Yellow,
     Red,

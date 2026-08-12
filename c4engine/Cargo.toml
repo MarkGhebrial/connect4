@@ -1,0 +1,7 @@
+[package]
+name = "c4engine"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+c4board = { path = "../c4board" }

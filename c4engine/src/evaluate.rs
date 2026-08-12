@@ -1,4 +1,4 @@
-use crate::connect4::{bitboard::Bitboard, board::Board, player_color::PlayerColor};
+use c4board::{bitboard::Bitboard, board::Board, player_color::PlayerColor};
 
 /// Given a board position, approximate which player has the advantage and by how much. Positive
 /// evaluations mean the up next player has an advantage and negative evaluations mean the up next

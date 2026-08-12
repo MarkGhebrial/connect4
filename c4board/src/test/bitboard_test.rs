@@ -1,6 +1,6 @@
 #[test]
 fn is_hanging_test() {
-    use crate::connect4::bitboard::Bitboard;
+    use crate::bitboard::Bitboard;
 
     assert!(!Bitboard::EMPTY.is_hanging());
     assert!(!Bitboard::FULL.is_hanging());
@@ -41,7 +41,7 @@ fn is_hanging_test() {
 
 #[test]
 fn has_four_in_a_row_test() {
-    use crate::connect4::bitboard::Bitboard;
+    use crate::bitboard::Bitboard;
 
     assert!(!Bitboard::EMPTY.has_four_in_a_row());
     assert!(Bitboard::FULL.has_four_in_a_row());
@@ -132,8 +132,8 @@ fn has_four_in_a_row_test() {
 
 #[test]
 fn is_top_cell_filled_test() {
-    use crate::connect4::bitboard::Bitboard;
-    use crate::connect4::bitboard::NUM_COLUMNS;
+    use crate::bitboard::Bitboard;
+    use crate::bitboard::NUM_COLUMNS;
 
     for i in 0..NUM_COLUMNS {
         println!("Checking column {i}");
