@@ -2,6 +2,7 @@
 members = [
     "c4board",
     "c4engine",
+    "c4i",
     "c4ui",
 ]
 resolver = "3"

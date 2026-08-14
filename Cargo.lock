@@ -70,6 +70,14 @@ name = "c4engine"
 version = "0.1.0"
 dependencies = [
  "c4board",
+ "c4i",
+]
+
+[[package]]
+name = "c4i"
+version = "0.1.0"
+dependencies = [
+ "c4board",
 ]
 
 [[package]]

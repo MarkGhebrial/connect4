@@ -5,3 +5,4 @@ edition = "2024"
 
 [dependencies]
 c4board = { path = "../c4board" }
+c4i = { path = "../c4i" }
