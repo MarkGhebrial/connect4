@@ -1,10 +1,13 @@
-use std::io::{stdin, stdout};
+mod tui;
+
+use std::io;
 
 use clap::Parser;
-use crossterm::{cursor, execute, style::Print, terminal};
 
-use c4board::{bitboard::NUM_ROWS, board::Board, r#move::Move, player_color::PlayerColor};
+use c4board::{board::Board, r#move::Move, player_color::PlayerColor};
 use c4engine::search_moves;
+
+use crate::tui::Tui;
 
 /// Program for playing connect 4
 #[derive(clap::Parser, Debug)]
@@ -17,9 +20,21 @@ struct Args {
 #[derive(clap::Subcommand, Debug)]
 enum Commands {
     /// Play an interactive game of connect 4 against the computer.
-    Interactive(InteractiveArgs),
-    /// Launch in "connect 4 interface" mode.
-    C4I,
+    Play(PlayArgs),
+}
+
+impl Commands {
+    pub fn run(&self) {
+        match self {
+            Commands::Play(args) => run_interactive(args).unwrap(),
+        }
+    }
+}
+
+#[derive(clap::Parser, Debug)]
+struct PlayArgs {
+    #[arg(short, long, default_value = "yellow")]
+    play_as: PlayAs,
 }
 
 #[derive(clap::ValueEnum, Debug, Clone, Copy)]
@@ -35,59 +50,31 @@ impl PlayAs {
         }
     }
 }
-
-#[derive(clap::Parser, Debug)]
-struct InteractiveArgs {
-    #[arg(short, long, default_value = "yellow")]
-    play_as: PlayAs,
-}
-
-impl Commands {
-    pub fn run(&self) {
-        match self {
-            Commands::Interactive(args) => run_interactive(args),
-            Commands::C4I => run_c4i(),
-        }
+impl PartialEq<PlayAs> for PlayerColor {
+    fn eq(&self, other: &PlayAs) -> bool {
+        self == &other.to_player_color()
     }
 }
 
-fn main() {
-    let args = Args::parse();
-
-    args.subcommand.run();
-}
-
-fn run_interactive(args: &InteractiveArgs) {
+fn run_interactive(args: &PlayArgs) -> io::Result<()> {
     let mut board = Board::new();
 
-    // Make space to draw the board
-    execute!(
-        stdout(),
-        crossterm::terminal::ScrollUp(NUM_ROWS as u16 + 1),
-        cursor::MoveUp(NUM_ROWS as u16 + 1),
-        cursor::SavePosition,
-    )
-    .unwrap();
+    let mut tui = Tui::init()?;
 
     while board.has_four_in_a_row().is_none() {
         // Display the board
-        execute!(stdout(), cursor::RestorePosition, Print(board)).unwrap();
+        tui.set_board(&board)?;
 
         // Human's turn
-        if board.up_next() == args.play_as.to_player_color() {
+        if board.up_next() == args.play_as {
             let legal_moves: Vec<u8> = board.iter_moves().map(|m| m.column()).collect();
 
-            execute!(
-                stdout(),
-                terminal::Clear(terminal::ClearType::CurrentLine),
-                Print("Enter your move: ")
-            )
-            .unwrap();
+            let mut line = String::new();
+            tui.set_message("Enter your move: ")?;
 
             let move_: u8 = loop {
-                let mut line = String::new();
-                stdin().read_line(&mut line).unwrap();
-                execute!(stdout(), terminal::ScrollDown(1),).unwrap();
+                line.clear();
+                tui.get_input(&mut line)?;
 
                 // Only accept inputs that are a single character
                 let first_byte = if line.trim().len() == 1 {
@@ -101,12 +88,7 @@ fn run_interactive(args: &InteractiveArgs) {
                 {
                     break byte - b'0';
                 } else {
-                    execute!(
-                        stdout(),
-                        terminal::Clear(terminal::ClearType::CurrentLine),
-                        Print("Invalid move. Try again: ")
-                    )
-                    .unwrap();
+                    tui.set_message("Invalid move. Try again: ")?;
                 }
             };
 
@@ -114,86 +96,23 @@ fn run_interactive(args: &InteractiveArgs) {
         }
         // Computer's turn
         else {
-            execute!(
-                stdout(),
-                terminal::Clear(terminal::ClearType::CurrentLine),
-                Print("Computing next move...")
-            )
-            .unwrap();
+            tui.set_message("Computing next move...")?;
             let (move_, _evaluation) = search_moves(&board, 4);
             board.apply_move(move_);
         }
     }
 
-    // Display the board
-    execute!(stdout(), cursor::RestorePosition, Print(board)).unwrap();
+    tui.set_board(&board)?;
 
     let message = match board.has_four_in_a_row().unwrap() {
         PlayerColor::Yellow => "Yellow won!",
         PlayerColor::Red => "Red won!",
     };
-    execute!(
-        stdout(),
-        terminal::Clear(terminal::ClearType::CurrentLine),
-        Print(message),
-        Print("\n"),
-    )
-    .unwrap();
+    tui.set_message(message)
 }
 
-/// c4i stands for "connect 4 interface". It's a protocol I invented that's vaguely inspired by the
-/// universal chess interface. A typical exchange goes like this (client goes first):
-/// ```text
-/// c4i
-/// c4iok
-/// play ;;;;;;
-/// playok 3
-/// play ;;;ry;;;
-/// playok 4
-/// ```
-/// Those chunks of text are boards serialized using my "connect 4 encoding" (c4e) format. See
-/// [Board::from_c4e] for more detail.
-fn run_c4i() {
-    let mut line = String::new();
-    loop {
-        line.clear();
-        stdin().read_line(&mut line).unwrap();
+fn main() {
+    let args = Args::parse();
 
-        let mut words = line.split_whitespace();
-        match words.next() {
-            Some("c4i") => println!("c4iok"),
-            Some("play") => {
-                // connect 4 encoding board encoding
-                let Some(c4e) = words.next() else {
-                    println!("err missing argument");
-                    continue;
-                };
-
-                let board = match Board::from_c4e(c4e) {
-                    Ok(board) => board,
-                    Err(e) => {
-                        println!("err {}", e);
-                        continue;
-                    }
-                };
-
-                println!("playok");
-                let (move_, _eval) = search_moves(&board, 1);
-                println!("playdone {}", move_.column());
-            }
-            Some(_) => println!("err unrecognized command"),
-            None => (),
-        }
-
-        // c4i
-        // c4iok
-        // play ;;;;;; timelimit 100
-        // playok
-        // playdone 3
-
-        // Read a line from stdin
-
-        // Interpret the command
-        // play
-    }
+    args.subcommand.run();
 }
