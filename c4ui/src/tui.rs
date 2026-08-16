@@ -1,9 +1,9 @@
-use std::io::{self, stdin, stdout};
+use std::io::{self, Write, stdin, stdout};
 
 use c4board::{bitboard::NUM_ROWS, board::Board};
 use crossterm::{
     cursor::MoveTo,
-    execute,
+    execute, queue,
     style::Print,
     terminal::{Clear, ClearType},
 };
@@ -25,7 +25,7 @@ impl Tui {
         // Make space for the TUI if needed
         let available_space = term_height - cursor_y;
         if available_space < Self::TUI_HEIGHT {
-            execute!(
+            queue!(
                 stdout(),
                 crossterm::terminal::ScrollUp(Self::TUI_HEIGHT - available_space)
             )?;
@@ -38,8 +38,12 @@ impl Tui {
         })
     }
 
+    pub fn flush(&self) -> io::Result<()> {
+        stdout().flush()
+    }
+
     pub fn set_board(&self, board: &Board) -> io::Result<()> {
-        execute!(
+        queue!(
             stdout(),
             MoveTo(self.cursor_home.0, self.cursor_home.1),
             Print(board),
@@ -49,7 +53,7 @@ impl Tui {
     /// Display the given message on the line beneath the board
     pub fn set_message(&mut self, message: &str) -> io::Result<()> {
         self.message_width = message.len() as u16;
-        execute!(
+        queue!(
             stdout(),
             MoveTo(
                 self.cursor_home.0,
