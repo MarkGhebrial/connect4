@@ -61,7 +61,7 @@ fn run_interactive(args: &PlayArgs) -> io::Result<()> {
 
     let mut tui = Tui::init()?;
 
-    while board.has_four_in_a_row().is_none() {
+    while !board.is_game_over() {
         // Display the board
         tui.set_board(&board)?;
 
@@ -97,7 +97,7 @@ fn run_interactive(args: &PlayArgs) -> io::Result<()> {
         // Computer's turn
         else {
             tui.set_message("Computing next move...")?;
-            let (move_, _evaluation) = search_moves(&board, 4);
+            let (move_, _evaluation) = search_moves(&board, 4).unwrap();
             board.apply_move(move_);
         }
     }

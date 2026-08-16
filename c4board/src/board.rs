@@ -10,9 +10,8 @@ use crate::{
 };
 
 /// A possible state of the board. The positions of the yellow and red checkers are represented as a
-/// bitboards
-/// where 0 is the least significant bit. Unlike chess, we don't have a perfect 8x8 grid, so every
-/// bitboard has 22 wasted bits at the end.
+/// bitboards. Unlike chess, we don't have a perfect 8x8 grid, so every bitboard has 22 wasted bits
+/// at the end.
 #[derive(Debug, Clone, Copy)]
 pub struct Board {
     /// The positions of the yellow checkers. Yellow is the player that goes first.
@@ -75,6 +74,10 @@ impl Board {
         Ok(board)
     }
 
+    pub fn to_c4e(&self) -> String {
+        todo!()
+    }
+
     pub fn yellow(&self) -> Bitboard {
         self.yellow
     }
@@ -95,7 +98,7 @@ impl Board {
         no_overlap && self.validate_checker_count() && !self.combined_bitboard().is_hanging()
     }
 
-    pub fn has_four_in_a_row(&self) -> Option<PlayerColor> {
+    pub fn winner(&self) -> Option<PlayerColor> {
         let yellow_four = self.yellow.has_four_in_a_row();
         let red_four = self.red.has_four_in_a_row();
         match (yellow_four, red_four) {
@@ -114,6 +117,17 @@ impl Board {
                 !self.combined_bitboard().is_top_cell_filled(*col_idx)
             })
             .map(|col_idx| Move::new(col_idx as u8))
+    }
+
+    pub fn is_full(&self) -> bool {
+        self.combined_bitboard() & Bitboard::TOP_ROW == Bitboard::TOP_ROW
+    }
+
+    /// The game is over when
+    /// - The board is full (i.e. there are no legal moves)
+    /// - OR One of the players has four in a row
+    pub fn is_game_over(&self) -> bool {
+        self.is_full() || self.winner().is_some()
     }
 
     pub fn apply_move(&mut self, r#move: Move) {

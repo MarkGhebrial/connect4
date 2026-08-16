@@ -51,6 +51,11 @@ pub trait C4IServer {
                         }
                     };
 
+                    if board.is_game_over() {
+                        writeln!(writer, "err no legal moves")?;
+                        continue;
+                    }
+
                     writeln!(writer, "playok")?;
                     let move_ = Self::play(&board);
                     writeln!(writer, "playdone {}", move_.column())?;

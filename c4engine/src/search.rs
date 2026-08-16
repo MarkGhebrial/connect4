@@ -2,8 +2,8 @@ use crate::evaluate::evaluate;
 
 use c4board::{board::Board, r#move::Move};
 
-/// Search for the best move from this board position.
-pub fn search_moves(board: &Board, depth: usize) -> (Move, i32) {
+/// Search for the best move from this board position. Returns None if there are no legal moves.
+pub fn search_moves(board: &Board, depth: usize) -> Option<(Move, i32)> {
     let mut best: Option<(Move, i32)> = None;
     for move_ in board.iter_moves() {
         let score = -negamax(&board.clone().with_move(move_), depth - 1);
@@ -14,7 +14,7 @@ pub fn search_moves(board: &Board, depth: usize) -> (Move, i32) {
         }
     }
 
-    best.expect("Tried to search on a board with no legal moves")
+    best
 }
 
 /// Evaluate a board state using a negamax search with the specified depth. Currently, no alpha-beta
@@ -22,7 +22,7 @@ pub fn search_moves(board: &Board, depth: usize) -> (Move, i32) {
 ///
 /// https://chessprogramming.org/Negamax
 fn negamax(board: &Board, remaining_depth: usize) -> i32 {
-    if remaining_depth == 0 || board.has_four_in_a_row().is_some() {
+    if remaining_depth == 0 || board.is_game_over() {
         return evaluate(board);
     }
 
