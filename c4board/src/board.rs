@@ -12,7 +12,7 @@ use crate::{
 /// A possible state of the board. The positions of the yellow and red checkers are represented as a
 /// bitboards. Unlike chess, we don't have a perfect 8x8 grid, so every bitboard has 22 wasted bits
 /// at the end.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct Board {
     /// The positions of the yellow checkers. Yellow is the player that goes first.
     yellow: Bitboard,
@@ -75,7 +75,36 @@ impl Board {
     }
 
     pub fn to_c4e(&self) -> String {
-        todo!()
+        let mut out = String::new();
+
+        // Iterate from the leftmost column to the rightmost column
+        for (column_idx, column_mask) in Bitboard::NTH_COLUMN.iter().rev().enumerate() {
+            // Iterate from the bottommost cell to the topmost cell
+            'row_loop: for row_mask in Bitboard::NTH_ROW {
+                let cell_mask = row_mask & *column_mask;
+
+                let cell_is_yellow = !(self.yellow & cell_mask).is_empty();
+                let cell_is_red = !(self.red & cell_mask).is_empty();
+                match (cell_is_yellow, cell_is_red) {
+                    // The cell is empty, which means we can move on to the next column
+                    (false, false) => break 'row_loop,
+                    // The cell is both red and yellow, which is illegal
+                    (true, true) => panic!("tried to serialize invalid board"),
+                    (true, false) => out += "y",
+                    (false, true) => out += "r",
+                }
+            }
+
+            // Don't add a semicolon after the last column
+            if column_idx != NUM_COLUMNS - 1 {
+                out += ";";
+            }
+        }
+
+        // Make sure the resulting c4e string is valid
+        debug_assert_eq!(Self::from_c4e(&out).unwrap(), *self);
+
+        out
     }
 
     pub fn yellow(&self) -> Bitboard {
