@@ -195,6 +195,10 @@ impl Bitboard {
         has_four_in_a_row
     }
 
+    pub fn is_empty(&self) -> bool {
+        *self == Self::EMPTY
+    }
+
     /// Count the number of set bits.
     pub const fn count_ones(&self) -> u32 {
         self.0.count_ones()
