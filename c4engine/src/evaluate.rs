@@ -14,9 +14,9 @@ pub fn evaluate(board: &Board) -> i32 {
     let mut red_score: i32 = 0;
 
     yellow_score += (board.yellow() & Bitboard::NTH_COLUMN[3]).count_ones() as i32;
-    // red_score += (board.red() & Bitboard::NTH_COLUMN[3]).count_ones() as i32;
+    red_score += (board.red() & Bitboard::NTH_COLUMN[3]).count_ones() as i32;
 
-    if let Some(player) = board.has_four_in_a_row() {
+    if let Some(player) = board.winner() {
         match player {
             PlayerColor::Yellow => yellow_score += 400,
             PlayerColor::Red => red_score += 400,
