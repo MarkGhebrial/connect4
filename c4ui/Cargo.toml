@@ -4,9 +4,10 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-# c4ui = { path = "../c4ui" }
+c4i = { path = "../c4i" }
 c4board = { path = "../c4board" }
 c4engine = { path = "../c4engine" }
 
 clap = { version = "4.6.6", features = ["derive"] }
 crossterm = "0.29.0"
+rand = "0.10.2"

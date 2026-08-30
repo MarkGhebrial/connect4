@@ -80,4 +80,13 @@ impl Tui {
         }
         Ok(())
     }
+
+    /// Consume self, setting up the terminal for regular `println!` usage.
+    pub fn end(self) -> io::Result<()> {
+        execute!(
+            stdout(),
+            MoveTo(self.cursor_home.0, self.cursor_home.1 + Self::TUI_HEIGHT),
+            Print("\n"),
+        )
+    }
 }
