@@ -67,47 +67,54 @@ pub trait C4IServer {
     }
 }
 
-// pub struct C4IClient<'a, R, W>
-// where
-//     R: io::BufRead,
-//     W: io::Write,
-// {
-//     reader: &'a R,
-//     writer: &'a W,
-// }
-// impl C4IClient
+pub struct C4IClient<R, W>
+where
+    R: io::Read,
+    W: io::Write,
+{
+    reader: BufReader<R>,
+    writer: W,
+}
 
-pub mod client {
-    use c4board::{board::Board, r#move::Move};
-    use std::io;
-
-    pub fn greet<RW>(rw: &mut RW) -> bool
-    where
-        RW: io::BufRead + io::Write,
-    {
-        if writeln!(rw, "c4i").is_err() {
-            return false;
-        };
-        let mut line = String::new();
-        if rw.read_line(&mut line).is_err() {
-            return false;
+impl<R, W> C4IClient<R, W>
+where
+    R: io::Read,
+    W: io::Write,
+{
+    pub fn new(reader: R, writer: W) -> Self {
+        Self {
+            reader: BufReader::new(reader),
+            writer,
         }
-        let Some(first_word) = line.split_whitespace().nth(0) else {
-            return false;
-        };
-        if first_word != "c4iok" {
-            return false;
-        }
-
-        true
     }
 
-    pub fn play<RW>(rw: &mut RW, board: &Board) -> io::Result<Move>
-    where
-        RW: io::BufRead + io::Write,
-    {
-        writeln!(rw, "play {}", board.to_c4e())?;
+    pub fn greet(&mut self) -> io::Result<()> {
+        writeln!(self.writer, "c4i")?;
+        let mut line = String::new();
+        // Read lines until we get one that's not empty
+        while line.is_empty() || line == "\n" {
+            line.clear();
+            self.reader.read_line(&mut line)?;
+        }
+        // Verify that the response is "c4iok\n". TODO: Handle this more gracefully
+        assert_eq!(line, "c4iok\n");
+        Ok(())
+    }
 
-        todo!();
+    pub fn play(&mut self, board: &Board) -> io::Result<Move> {
+        writeln!(self.writer, "play {}", board.to_c4e())?;
+        let mut line = String::new();
+        self.reader.read_line(&mut line)?;
+        // TODO: Do literally any error handling at all
+        assert_eq!(line, "playok\n");
+
+        line.clear();
+        self.reader.read_line(&mut line)?;
+        let mut words = line.split_whitespace();
+        // TODO: Do literally any error handling at all
+        assert_eq!(words.next().unwrap(), "playdone");
+        let move_ = Move::new(words.next().unwrap().parse().unwrap());
+
+        Ok(move_)
     }
 }
