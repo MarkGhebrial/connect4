@@ -140,7 +140,8 @@ impl Board {
 
     /// Iterate over all the legal moves from this board state
     pub fn iter_moves(&self) -> impl Iterator<Item = Move> {
-        (0..NUM_COLUMNS)
+        [3usize, 2, 4, 1, 5, 0, 6]
+            .into_iter()
             .filter(|col_idx| {
                 // Make sure the top cell of the column isn't occupied
                 !self.combined_bitboard().is_top_cell_filled(*col_idx)

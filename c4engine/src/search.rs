@@ -6,7 +6,12 @@ use c4board::{board::Board, r#move::Move};
 pub fn search_moves(board: &Board, depth: usize) -> Option<(Move, i32)> {
     let mut best: Option<(Move, i32)> = None;
     for move_ in board.iter_moves() {
-        let score = -negamax(&board.clone().with_move(move_), depth - 1);
+        let score = -negamax(
+            &board.clone().with_move(move_),
+            i32::MIN,
+            i32::MAX,
+            depth - 1,
+        );
 
         // Find the move with the best score
         if best.is_none() || score > best.unwrap().1 {
@@ -17,11 +22,11 @@ pub fn search_moves(board: &Board, depth: usize) -> Option<(Move, i32)> {
     best
 }
 
-/// Evaluate a board state using a negamax search with the specified depth. Currently, no alpha-beta
-/// pruning is implemented.
+/// Evaluate a board state using a negamax search with the specified depth.
 ///
 /// https://chessprogramming.org/Negamax
-fn negamax(board: &Board, remaining_depth: usize) -> i32 {
+/// https://chessprogramming.org/Alpha-Beta
+fn negamax(board: &Board, mut alpha: i32, beta: i32, remaining_depth: usize) -> i32 {
     if remaining_depth == 0 || board.is_game_over() {
         return evaluate(board);
     }
@@ -31,9 +36,16 @@ fn negamax(board: &Board, remaining_depth: usize) -> i32 {
         let board: Board = board.clone().with_move(r#move);
         // This recursive call tells us how good this new board position is for the opponent. We
         // negate it because a bad score for them is a good score for us.
-        let score = -negamax(&board, remaining_depth - 1);
+        let score = -negamax(&board, -beta, -alpha, remaining_depth - 1);
         if score > max_score {
-            max_score = score
+            max_score = score;
+            if score > alpha {
+                alpha = score;
+            }
+        }
+        // Don't search the rest of the moves if this move is better than ??? TODO: Understand alpha/beta search well enough to write this comment
+        if score >= beta {
+            return max_score;
         }
     }
 

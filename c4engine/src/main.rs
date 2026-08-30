@@ -12,7 +12,7 @@ use search::search_moves;
 pub struct MyC4IServer;
 impl c4i::C4IServer for MyC4IServer {
     fn play(board: &Board) -> Move {
-        search_moves(board, 5).expect("No legal moves").0
+        search_moves(board, 11).expect("No legal moves").0
     }
 }
 

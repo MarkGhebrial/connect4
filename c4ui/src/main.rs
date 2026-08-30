@@ -117,7 +117,7 @@ fn run_interactive(args: &PlayArgs) -> io::Result<()> {
         // Computer's turn
         else {
             tui.set_message("Computing next move...")?;
-            let (move_, _evaluation) = search_moves(&board, 4).unwrap();
+            let (move_, _evaluation) = search_moves(&board, 11).unwrap();
             board.apply_move(move_);
         }
     }
@@ -169,7 +169,9 @@ impl C4IProcess {
 
 impl Drop for C4IProcess {
     fn drop(&mut self) {
-        self.child_process.kill().expect("unable to kill child process");
+        self.child_process
+            .kill()
+            .expect("unable to kill child process");
     }
 }
 
@@ -183,7 +185,7 @@ enum Player {
 impl Player {
     pub fn play(&mut self, board: &Board) -> Move {
         match self {
-            Player::Static => c4engine::search_moves(board, 5).unwrap().0,
+            Player::Static => c4engine::search_moves(board, 11).unwrap().0,
             Player::C4i(c4i_player) => c4i_player.play(board).unwrap(),
         }
     }

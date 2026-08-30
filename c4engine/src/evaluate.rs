@@ -13,8 +13,14 @@ pub fn evaluate(board: &Board) -> i32 {
     let mut yellow_score: i32 = 0;
     let mut red_score: i32 = 0;
 
-    yellow_score += (board.yellow() & Bitboard::NTH_COLUMN[3]).count_ones() as i32;
-    red_score += (board.red() & Bitboard::NTH_COLUMN[3]).count_ones() as i32;
+    // TODO: This doesn't seem to do anything at all to the engine strength. Probably should be removed
+    let column_weights = [0, 1, 2, 3, 2, 1, 0];
+    for (column_idx, column_weight) in column_weights.into_iter().map(|w| w * 100).enumerate() {
+        yellow_score +=
+            column_weight * (board.yellow() & Bitboard::NTH_COLUMN[column_idx]).count_ones() as i32;
+        red_score +=
+            column_weight * (board.red() & Bitboard::NTH_COLUMN[column_idx]).count_ones() as i32;
+    }
 
     if let Some(player) = board.winner() {
         match player {
@@ -23,21 +29,8 @@ pub fn evaluate(board: &Board) -> i32 {
         }
     }
 
-    // for four in Bitboard::FOURS {
-    //     // yellow_score += (board.yellow() & four).count_ones() as i32;
-    //     // red_score += (board.red() & four).count_ones() as i32;
-    // }
-
-    // println!("yellow {} red {}", yellow_score, red_score);
-
     match board.up_next() {
         PlayerColor::Yellow => yellow_score - red_score,
         PlayerColor::Red => red_score - yellow_score,
     }
 }
-
-// // Given a bitboard of the up next player's pieces and a bitboard of the other player's pieces,
-// // return an evaluation for how strong the player's position is.
-// fn evaluate_position(up_next_bb: Bitboard, other_bb: Bitboard) -> i32 {
-//     todo!()
-// }
