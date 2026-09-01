@@ -1,0 +1,13 @@
+{
+    "scripts": {
+        "build": "webpack",
+        "serve": "webpack serve"
+    },
+    "devDependencies": {
+        "@wasm-tool/wasm-pack-plugin": "",
+        "html-webpack-plugin": "",
+        "webpack": "",
+        "webpack-cli": "",
+        "webpack-dev-server": ""
+    }
+}

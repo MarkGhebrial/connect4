@@ -4,5 +4,6 @@ members = [
     "c4engine",
     "c4i",
     "c4ui",
+    "c4web",
 ]
 resolver = "3"
