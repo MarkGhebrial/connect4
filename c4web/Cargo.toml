@@ -7,4 +7,9 @@ edition = "2024"
 crate-type = ["cdylib"]
 
 [dependencies]
+c4board = { path = "../c4board", default-features = false }
+# c4engine = { path = "../c4engine" }
+
+js-sys = "0.3.104"
 wasm-bindgen = "0.2.127"
+web-sys = { version = "0.3.104", features = ['Window', 'Document', 'Element', 'HtmlElement', 'HtmlParagraphElement'] }

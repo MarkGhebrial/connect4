@@ -1,0 +1,40 @@
+/* Drop a checker onto the connect 4 board */
+@keyframes dropIn {
+    0% {
+        top: -200px;
+    }
+    100% {
+        top: 0px;
+    }
+}
+
+/* Styling for board cells */
+div.checker {
+    border-radius: 50%;
+    border-width: 10px;
+    border-style: solid;
+    background-color: white;
+    border-color: darkblue;
+
+    width: 75px;
+    height: 75px;
+ 
+    position: relative;
+    animation: dropIn 0.3s ease-in; 
+}
+div.checker.yellow {
+    background-color: yellow;
+    border-color: yellowgreen;
+}
+div.checker.red {
+    background-color:red;
+    border-color: maroon;
+}
+
+/* A grid with 7 columns */
+.container {
+    background-color: blue;
+    padding: 10px;
+    display: inline-grid;
+    grid-template-columns: auto auto auto auto auto auto auto
+}
