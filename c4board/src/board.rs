@@ -1,6 +1,9 @@
-use std::{debug_assert, fmt::Display};
+use std::debug_assert;
 
+#[cfg(feature = "pretty-print")]
 use crossterm::style::Stylize;
+#[cfg(feature = "pretty-print")]
+use std::fmt::Display;
 
 use crate::{
     bitboard::{Bitboard, NUM_COLUMNS, NUM_ROWS},
@@ -190,6 +193,7 @@ impl Board {
         }
     }
 
+    #[cfg(feature = "pretty-print")]
     pub fn pretty_print(
         &self,
         mut writer: impl std::fmt::Write,
@@ -241,6 +245,7 @@ impl Board {
     }
 }
 
+#[cfg(feature = "pretty-print")]
 impl Display for Board {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.pretty_print(f, true)
