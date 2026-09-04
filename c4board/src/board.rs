@@ -115,7 +115,7 @@ impl Board {
     }
 
     pub fn red(&self) -> Bitboard {
-        self.yellow
+        self.red
     }
 
     /// Who's turn is it?
