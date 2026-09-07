@@ -20,7 +20,7 @@ pub fn show_board() {
     par.set_text_content(Some("This is the value of the paragraph. It has been inserted into the DOM through webassembly."));
 
     document
-        .get_element_by_id("board")
+        .get_element_by_id("blurb")
         .unwrap()
         .replace_children_with_node_1(&par);
 

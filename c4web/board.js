@@ -1,7 +1,7 @@
 /// Reach into the gross, sticky DOM to set the color of one of the cells on the
 /// board.
 export function set_checker_color(row, col, color) {
-    let board = document.getElementsByClassName("container")[0];
+    let board = document.getElementsById("board");
     let column = board.children[6 - col];
     let cell = column.children[5 - row];
     
